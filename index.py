@@ -1,7 +1,6 @@
 
 from flask import Flask, request, jsonify
-import pickle
-import numpy as np
+
 
 
 app = Flask(__name__)
@@ -15,35 +14,36 @@ def hello_world():
 
 
 
-@app.route('/guide', methods=["POST"])
+@app.route('/weather', methods=["POST"])
 def add_guide():
-    speed = request.json['speed']
-    gyrosx = request.json['gyrosx']
-    gyrosy = request.json['gyrosy']
-    magnitude = request.json['magnitude']
+    LDR = request.json['LDR']
+    rain = request.json['rain']
+    wind = request.json['wind']
+    
+    if rain > 0 and wind > 50 and LDR == 1:
+    	weather = 'Rainy and Windy'
 
+    if rain == 0 and wind > 50 and LDR == 0:
+    	weather = 'Sunny and Windy'
 
+    if rain == 0 and wind < 50 and LDR == 0:
+    	weather = 'Sunny'
 
-    modelQA = pickle.load(open('ML/Decision-tree.pkl','rb'))
-    arr = np.array([[speed, gyrosx, gyrosy, magnitude]])
-    mlouptput = modelQA.predict(arr)
+    if rain > 0 and wind < 50 and LDR == 1:
+    	weather = 'Rainy'
 
-    if 'ok' in mlouptput:
-        #OutputGB = 0
-        roadsurface = 'ok'
-        
-    if 'hump' in mlouptput:
-    #     #OutputGB = 2
-        roadsurface = 'hump'
+    if rain == 0 and wind < 50 and LDR == 1:
+    	weather = 'cloudy'
 
-    if 'Pothole' in mlouptput:
-    #     #OutputGB = 1
-        roadsurface = 'Pothole'
+    if rain == 0 and wind > 50 and LDR == 1:
+    	weather = 'cloudy and windy'
+
+    
 
     
     guide = 'Sunny'
 
-    return jsonify(roadsurface)
+    return jsonify(weather)
 
 if __name__ == '__main__':
     app.run()
